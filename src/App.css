@@ -1,10 +1,283 @@
 .App {
-  text-align: center;
+  min-height: 100vh;
+  color: #eaf2ff;
+  /* Day/night tint variables (controlled by data-phase on .App) */
+  --sky-a: rgba(110, 231, 255, 0.10);
+  --sky-b: rgba(168, 85, 247, 0.10);
+  --sky-c: rgba(34, 211, 238, 0.07);
+  --sky-base-top: #000000;
+  --sky-base-bottom: #000000;
+  --stars-opacity: 0.75;
+  --stars2-opacity: 0.50;
+
+  background:
+    radial-gradient(1200px 800px at 20% 10%, var(--sky-a), transparent 60%),
+    radial-gradient(900px 700px at 80% 20%, var(--sky-b), transparent 55%),
+    radial-gradient(700px 600px at 50% 90%, var(--sky-c), transparent 55%),
+    linear-gradient(180deg, var(--sky-base-top) 0%, var(--sky-base-bottom) 100%);
+  transition:
+    background-color 900ms linear,
+    filter 900ms linear;
+  overflow: hidden;
+  position: relative;
+  image-rendering: pixelated;
+}
+
+.App[data-phase='day'] {
+  --sky-a: rgba(110, 231, 255, 0.14);
+  --sky-b: rgba(97, 218, 251, 0.09);
+  --sky-c: rgba(253, 224, 71, 0.06);
+  --sky-base-top: #0b1430;
+  --sky-base-bottom: #040614;
+  --stars-opacity: 0.35;
+  --stars2-opacity: 0.22;
+}
+
+.App[data-phase='night'] {
+  --sky-a: rgba(168, 85, 247, 0.14);
+  --sky-b: rgba(110, 231, 255, 0.10);
+  --sky-c: rgba(34, 211, 238, 0.07);
+  --sky-base-top: #060814;
+  --sky-base-bottom: #020208;
+  --stars-opacity: 0.85;
+  --stars2-opacity: 0.58;
+}
+
+/* Screen-reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Draggable “Terraria-ish” sun + moon ring --- */
+
+.Celestial {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none; /* background-only */
+}
+
+/* --- Planetary system (sun centered, planets orbit) --- */
+.Planetary {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.Sun {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 140px;
+  height: 140px;
+  margin-left: -70px;
+  margin-top: -70px;
+  border-radius: 999px;
+  pointer-events: none;
+  filter:
+    drop-shadow(0 0 10px rgba(255, 200, 80, 0.55))
+    drop-shadow(0 0 22px rgba(255, 160, 32, 0.35))
+    drop-shadow(0 0 70px rgba(255, 120, 0, 0.22));
+}
+
+.Planet-orbit {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  will-change: transform;
+}
+
+.Planet {
+  position: absolute;
+  left: 0;
+  top: 0;
+  /* Keep orbits visible even on smaller screens */
+  transform: translateX(clamp(90px, var(--r, 220px), calc(50vmin - 90px)));
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.Planet--moon {
+  filter:
+    drop-shadow(0 0 10px rgba(110, 231, 255, 0.45))
+    drop-shadow(0 0 26px rgba(80, 160, 255, 0.25))
+    drop-shadow(0 0 70px rgba(48, 86, 255, 0.16));
+}
+
+.Planet--twins {
+  filter:
+    drop-shadow(0 0 10px rgba(255, 170, 92, 0.30))
+    drop-shadow(0 0 28px rgba(168, 85, 247, 0.18));
+}
+
+.Planet--timber {
+  filter:
+    drop-shadow(0 0 10px rgba(34, 211, 238, 0.22))
+    drop-shadow(0 0 26px rgba(110, 231, 255, 0.14));
+}
+
+.Planet--brittle {
+  filter:
+    drop-shadow(0 0 10px rgba(255, 200, 80, 0.18))
+    drop-shadow(0 0 26px rgba(255, 140, 64, 0.14));
+}
+
+/* --- Menu hover highlights (no time-based transparency switching) --- */
+/* Default: keep everything visible */
+.Sun,
+.Planet {
+  transition: opacity 200ms ease, filter 200ms ease;
+}
+
+/* Hover "sun": Sun stands out (planets dim) */
+.App[data-highlight='sun'] .Planet {
+  opacity: 0.12;
+  filter: none;
+}
+.App[data-highlight='sun'] .Sun {
+  opacity: 1;
+}
+
+/* Hover "twins": Twins stands out */
+.App[data-highlight='twins'] .Planet {
+  opacity: 0.18;
+  filter: none;
+}
+.App[data-highlight='twins'] .Planet--bodyTwins {
+  opacity: 1;
+  filter:
+    drop-shadow(0 0 12px rgba(255, 170, 92, 0.45))
+    drop-shadow(0 0 34px rgba(168, 85, 247, 0.28));
+}
+
+/* Hover "timber": Timber Hearth stands out */
+.App[data-highlight='timber'] .Planet {
+  opacity: 0.18;
+  filter: none;
+}
+.App[data-highlight='timber'] .Planet--bodyTimber {
+  opacity: 1;
+  filter:
+    drop-shadow(0 0 12px rgba(34, 211, 238, 0.40))
+    drop-shadow(0 0 34px rgba(110, 231, 255, 0.24));
+}
+
+/* Hover "brittle": Brittle Hollow stands out */
+.App[data-highlight='brittle'] .Planet {
+  opacity: 0.18;
+  filter: none;
+}
+.App[data-highlight='brittle'] .Planet--bodyBrittle {
+  opacity: 1;
+  filter:
+    drop-shadow(0 0 12px rgba(255, 200, 80, 0.30))
+    drop-shadow(0 0 34px rgba(255, 140, 64, 0.22));
+}
+
+/* Hover "moon": Moon stands out */
+.App[data-highlight='moon'] .Planet {
+  opacity: 0.18;
+  filter: none;
+}
+.App[data-highlight='moon'] .Planet--bodyMoon {
+  opacity: 1;
+  filter:
+    drop-shadow(0 0 12px rgba(110, 231, 255, 0.55))
+    drop-shadow(0 0 34px rgba(48, 86, 255, 0.28));
+}
+
+/* Orbit mode (centered, rotating) */
+.Celestial-orbit {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.Celestial-orbitRot {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 999px;
+  will-change: transform;
+}
+
+.Celestial-body {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 120px;
+  height: 120px;
+  margin-left: -60px;
+  margin-top: -60px;
+  pointer-events: none;
+}
+
+.Celestial-sun {
+  transform: translateX(calc(var(--celestial-radius, 210px)));
+}
+
+.Celestial-moon {
+  transform: translateX(calc(-1 * var(--celestial-radius, 210px)));
+}
+
+.Celestial-body--dim {
+  opacity: 0.25;
+  filter: grayscale(0.2) brightness(0.85);
+}
+
+.Celestial-orbit {
+  --celestial-radius: calc((min(520px, 100vmin) / 2) - 70px);
+}
+
+.Celestial-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  pointer-events: none;
+  user-select: none;
+}
+
+.Celestial-sun {
+  background: transparent;
+  filter:
+    drop-shadow(0 0 10px rgba(255, 200, 80, 0.55))
+    drop-shadow(0 0 22px rgba(255, 160, 32, 0.35))
+    drop-shadow(0 0 70px rgba(255, 120, 0, 0.22));
+}
+
+.Celestial-moon {
+  background: transparent;
+  filter:
+    drop-shadow(0 0 10px rgba(110, 231, 255, 0.45))
+    drop-shadow(0 0 26px rgba(80, 160, 255, 0.25))
+    drop-shadow(0 0 70px rgba(48, 86, 255, 0.16));
+  opacity: 0.98;
 }
 
 .App-logo {
-  height: 40vmin;
+  height: min(34vmin, 220px);
   pointer-events: none;
+  filter:
+    drop-shadow(0 0 12px rgba(97, 218, 251, 0.35))
+    drop-shadow(0 0 28px rgba(168, 85, 247, 0.25));
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -13,19 +286,398 @@
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+/* --- Pixel-space landing layout --- */
+
+.Stars {
+  position: absolute;
+  /* Overscan so the drift animation never exposes empty edges */
+  inset: -220px;
+  z-index: 0;
+  opacity: var(--stars-opacity);
+  background-repeat: repeat;
+  background-size: 180px 180px;
+  /* Tiny “pixel” star pattern created with layered gradients */
+  background-image:
+    radial-gradient(#eaf2ff 1px, transparent 1.4px),
+    radial-gradient(rgba(97, 218, 251, 0.9) 1px, transparent 1.4px),
+    radial-gradient(rgba(168, 85, 247, 0.9) 1px, transparent 1.6px);
+  background-position:
+    0 0,
+    40px 70px,
+    120px 30px;
+  animation: Stars-drift 26s linear infinite;
 }
 
-.App-link {
-  color: #61dafb;
+/* Duplicate the star field so even if one copy drifts, another is always visible */
+.Stars::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: inherit;
+  background-size: inherit;
+  background-repeat: inherit;
+  background-image: inherit;
+  /* Offset by exactly one tile so seams never line up */
+  transform: translate3d(180px, -180px, 0);
+  pointer-events: none;
+}
+
+.Stars--2 {
+  opacity: var(--stars2-opacity);
+  background-size: 260px 260px;
+  filter: blur(0.2px);
+  animation-duration: 46s;
+  animation-direction: reverse;
+}
+
+@keyframes Stars-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-180px, 180px, 0);
+  }
+}
+
+.Landing {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+  letter-spacing: 0.02em;
+}
+
+/* --- Minimal main menu (no frame/background behind text/buttons) --- */
+
+.Menu {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 18px;
+  text-align: center;
+  max-height: 100vh;
+  user-select: none;
+}
+
+.Menu {
+  --menu-fg: rgba(255, 185, 92, 0.96);
+  --menu-fg-soft: rgba(255, 200, 130, 0.86);
+  --menu-border: rgba(255, 185, 92, 0.28);
+  --menu-border-hover: rgba(255, 170, 64, 0.55);
+}
+
+.Menu-title {
+  margin: 0;
+  font-family: var(--font-pixel);
+  font-size: clamp(28px, 4.6vw, 56px);
+  line-height: 1.15;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  max-width: 18ch;
+  color: var(--menu-fg);
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.65),
+    0 0 26px rgba(255, 170, 64, 0.14),
+    0 0 70px rgba(255, 120, 0, 0.10);
+}
+
+.Menu-subtitle {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 14px;
+  line-height: 1.7;
+  opacity: 0.92;
+  color: var(--menu-fg-soft);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.55);
+}
+
+.Menu-buttons {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(160px, 220px));
+  gap: 12px;
+}
+
+@media (max-width: 520px) {
+  .Menu-buttons {
+    grid-template-columns: 1fr;
+    width: min(320px, 100%);
+  }
+}
+
+.Menu-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 14px;
+  font-family: var(--font-pixel);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--menu-fg);
+  text-decoration: none;
+  border: 1px solid var(--menu-border);
+  border-radius: 12px;
+  background: transparent; /* <- no background panel */
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.55);
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.20) inset,
+    0 10px 24px rgba(0, 0, 0, 0.15);
+  backdrop-filter: none;
+}
+
+.Menu-button:hover {
+  border-color: var(--menu-border-hover);
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.20) inset,
+    0 0 20px rgba(255, 170, 64, 0.12),
+    0 10px 28px rgba(0, 0, 0, 0.22);
+  transform: translateY(-1px);
+}
+
+.Menu-button:active {
+  transform: translateY(0);
+}
+
+.Landing-frame {
+  width: min(1100px, 100%);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  border: 2px solid rgba(234, 242, 255, 0.22);
+  box-shadow:
+    0 0 0 2px rgba(3, 4, 10, 0.85) inset,
+    0 0 0 1px rgba(97, 218, 251, 0.22),
+    0 22px 60px rgba(0, 0, 0, 0.55);
+  border-radius: 14px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.Landing-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(234, 242, 255, 0.14);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.1));
+}
+
+.Topbar-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  opacity: 0.9;
+  text-align: center;
+  flex: 1;
+}
+
+.Badge {
+  font-size: 10px;
+  padding: 6px 10px;
+  line-height: 1;
+  border: 1px solid rgba(234, 242, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(3, 4, 10, 0.6);
+  text-transform: uppercase;
+}
+
+.Badge--ok {
+  border-color: rgba(34, 211, 238, 0.32);
+  color: rgba(110, 231, 255, 0.95);
+  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.08) inset;
+}
+
+.Landing-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 18px;
+  padding: 22px;
+}
+
+@media (max-width: 880px) {
+  .Landing-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.Hero {
+  padding: 18px;
+  border: 1px dashed rgba(234, 242, 255, 0.18);
+  border-radius: 12px;
+  background: rgba(3, 4, 10, 0.35);
+}
+
+.Kicker {
+  margin: 0;
+  font-size: 11px;
+  opacity: 0.8;
+  text-transform: uppercase;
+}
+
+.Title {
+  margin: 10px 0 0;
+  font-size: clamp(28px, 4vw, 54px);
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.6),
+    0 0 24px rgba(97, 218, 251, 0.12);
+}
+
+.Subtitle {
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  opacity: 0.9;
+  max-width: 56ch;
+}
+
+.CTA {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.Button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 1px solid rgba(234, 242, 255, 0.18);
+  background: rgba(3, 4, 10, 0.5);
+  color: #eaf2ff;
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.35) inset,
+    0 10px 22px rgba(0, 0, 0, 0.35);
+}
+
+.Button:hover {
+  border-color: rgba(97, 218, 251, 0.35);
+  transform: translateY(-1px);
+}
+
+.Button:active {
+  transform: translateY(0);
+}
+
+.Button--primary {
+  border-color: rgba(97, 218, 251, 0.55);
+  background: linear-gradient(180deg, rgba(97, 218, 251, 0.22), rgba(3, 4, 10, 0.55));
+}
+
+.Button--ghost {
+  background: rgba(3, 4, 10, 0.28);
+}
+
+.Status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(234, 242, 255, 0.14);
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.Dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: rgba(34, 211, 238, 0.95);
+  box-shadow: 0 0 16px rgba(97, 218, 251, 0.45);
+}
+
+.Panel {
+  border-radius: 12px;
+  border: 1px solid rgba(234, 242, 255, 0.18);
+  background: rgba(3, 4, 10, 0.42);
+}
+
+.Panel-inner {
+  padding: 18px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  gap: 10px;
+}
+
+.Panel-text {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.Panel-stats {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.Stat {
+  border-radius: 10px;
+  border: 1px solid rgba(234, 242, 255, 0.12);
+  background: rgba(0, 0, 0, 0.18);
+  padding: 10px 12px;
+}
+
+.Stat-label {
+  font-size: 10px;
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.Stat-value {
+  font-size: 12px;
+  margin-top: 4px;
+  letter-spacing: 0.06em;
+}
+
+.Landing-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-top: 1px solid rgba(234, 242, 255, 0.14);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.Hint {
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+.TinyLink {
+  font-size: 11px;
+  color: rgba(110, 231, 255, 0.95);
+  text-decoration: none;
+  border-bottom: 1px dotted rgba(110, 231, 255, 0.35);
+  padding-bottom: 2px;
+}
+
+.TinyLink:hover {
+  opacity: 0.9;
 }
 
 @keyframes App-logo-spin {
