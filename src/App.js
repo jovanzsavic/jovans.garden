@@ -4,12 +4,16 @@ import { useState } from 'react';
 
 function App() {
   const [highlight, setHighlight] = useState('');
+  const [speed, setSpeed] = useState(1);
+
+  const clampSpeed = (v) => Math.max(0.25, Math.min(4, v));
 
   return (
     <div className="App" data-highlight={highlight || undefined}>
       <CelestialBackground
         onPhaseChange={undefined}
         onCycle={undefined}
+        speed={speed}
       />
       <div className="Stars" aria-hidden="true" />
       <div className="Stars Stars--2" aria-hidden="true" />
@@ -54,15 +58,45 @@ function App() {
           <a
             className="Menu-button"
             href="#contact"
-            onMouseEnter={() => setHighlight('moon')}
+            onMouseEnter={() => setHighlight('giants')}
             onMouseLeave={() => setHighlight('')}
-            onFocus={() => setHighlight('moon')}
+            onFocus={() => setHighlight('giants')}
             onBlur={() => setHighlight('')}
           >
             Contact
           </a>
         </nav>
       </main>
+
+      <div className="SpeedControls" aria-label="Animation speed controls">
+        <button
+          type="button"
+          className="SpeedControls-btn"
+          onClick={() => setSpeed((s) => clampSpeed(s / 1.5))}
+        >
+          -
+          <span className="sr-only">Slow down</span>
+        </button>
+        <button
+          type="button"
+          className="SpeedControls-btn"
+          onClick={() => setSpeed(1)}
+        >
+          1x
+          <span className="sr-only">Normal speed</span>
+        </button>
+        <button
+          type="button"
+          className="SpeedControls-btn"
+          onClick={() => setSpeed((s) => clampSpeed(s * 1.5))}
+        >
+          +
+          <span className="sr-only">Speed up</span>
+        </button>
+        <div className="SpeedControls-readout" aria-hidden="true">
+          {speed.toFixed(speed < 1 ? 2 : 1)}x
+        </div>
+      </div>
     </div>
   );
 }
