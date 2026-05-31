@@ -19,6 +19,12 @@ export default function CelestialBackground({
   nightSeconds = 45,
   speed = 1,
   focusKey,
+  /**
+   * Focus animation direction.
+   * - 'in' (default): animate from 0 -> 1 (zoom into focus)
+   * - 'out': animate from 1 -> 0 (zoom out / defocus)
+   */
+  focusDirection = 'in',
   focusCenter = false,
   focusScale = 2.4,
   /**
@@ -213,13 +219,14 @@ export default function CelestialBackground({
       const t = Math.min(1, Math.max(0, (now - start) / dur));
       // easeInOutCubic
       const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-      setFocusT(eased);
+      const dir = focusDirection === 'out' ? 'out' : 'in';
+      setFocusT(dir === 'out' ? 1 - eased : eased);
       if (t < 1) raf = requestAnimationFrame(tick);
     };
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [focusKey, focus]);
+  }, [focusKey, focus, focusDirection]);
 
   // Compute the focused planet's current position (same math as render loop)
   // so we can translate the whole system in the opposite direction.

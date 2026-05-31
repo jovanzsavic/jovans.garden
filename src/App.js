@@ -8,6 +8,7 @@ function HomeRoute() {
   const [highlight, setHighlight] = useState('');
   const [speed, setSpeed] = useState(1);
   const [isEnteringLab, setIsEnteringLab] = useState(false);
+  const [isEnteringHome, setIsEnteringHome] = useState(true);
   const navigate = useNavigate();
 
   const clampSpeed = (v) => Math.max(0.25, Math.min(4, v));
@@ -19,6 +20,12 @@ function HomeRoute() {
     }, 900);
     return () => clearTimeout(t);
   }, [isEnteringLab, navigate]);
+
+  useEffect(() => {
+    // When (re)entering Home (e.g. from /laboratory), start black then fade out.
+    const t = setTimeout(() => setIsEnteringHome(false), 50);
+    return () => clearTimeout(t);
+  }, []);
 
   const startLabTransition = () => {
     // prevent double-clicks triggering multiple timers
@@ -34,7 +41,10 @@ function HomeRoute() {
 
   return (
     <div className="App" data-highlight={highlight || undefined}>
-      <div className={`Blackout${isEnteringLab ? ' is-on' : ''}`} aria-hidden="true" />
+      <div
+        className={`Blackout${isEnteringHome || isEnteringLab ? ' is-on' : ''}`}
+        aria-hidden="true"
+      />
       <CelestialBackground
         onPhaseChange={undefined}
         onCycle={undefined}

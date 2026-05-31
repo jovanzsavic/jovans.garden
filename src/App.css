@@ -810,14 +810,54 @@
 
 .TinyLink {
   font-size: 11px;
-  color: rgba(110, 231, 255, 0.95);
+  font-family: var(--font-pixel);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 185, 92, 0.92);
   text-decoration: none;
-  border-bottom: 1px dotted rgba(110, 231, 255, 0.35);
-  padding-bottom: 2px;
+
+  /* Make it work for both <a> and <button> */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 185, 92, 0.35);
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.25) inset,
+    0 16px 40px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 200ms ease, transform 120ms ease, border-color 200ms ease, background 200ms ease;
 }
 
 .TinyLink:hover {
-  opacity: 0.9;
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.50);
+  border-color: rgba(255, 185, 92, 0.60);
+  transform: translateY(-1px);
+}
+
+.TinyLink:focus-visible {
+  outline: none;
+  border-color: rgba(110, 231, 255, 0.85);
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.25) inset,
+    0 0 0 3px rgba(110, 231, 255, 0.18);
+}
+
+.TinyLink:active {
+  transform: translateY(0);
+}
+
+.TinyLink:disabled,
+.TinyLink[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 @keyframes App-logo-spin {
