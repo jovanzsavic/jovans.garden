@@ -18,6 +18,40 @@ export default function CelestialBackground({
   daySeconds = 60,
   nightSeconds = 45,
   speed = 1,
+  focusKey,
+  focusCenter = false,
+  focusScale = 2.4,
+  /**
+   * When focusing a planet, we can optionally keep the rest of the system visible
+   * until partway through the focus animation (useful for pre-navigation zooms).
+   * - true: hide non-focused bodies immediately (default, existing behavior)
+   * - false: never hide (only camera moves)
+   */
+  focusHideOthers = true,
+  /**
+   * If focusHideOthers is true, delay hiding until focusT >= this threshold.
+   * 0 hides immediately, 1 hides only at the very end.
+   */
+  focusHideOthersAt = 0,
+  /**
+   * When focusing, optionally fade the entire scene (sun + all bodies) away.
+   * This is useful when you want the zoom to transition into a new route.
+   */
+  focusDimAll = false,
+  /**
+   * Start dimming at this focus progress (0..1).
+   */
+  focusDimFrom = 0,
+  /**
+   * End dimming at this focus progress (0..1). At or after this point, opacity is 0.
+   */
+  focusDimTo = 1,
+  /**
+   * If true, the focused planet also participates in the global fade.
+   * If false, the focused planet stays fully visible while everything else fades.
+   */
+  focusDimIncludeFocused = false,
+  hideSun = false,
   onPhaseChange,
   onCycle,
 }) {
@@ -156,6 +190,84 @@ export default function CelestialBackground({
     []
   );
 
+  // When focusing a body (e.g. on the Laboratory page), we smoothly animate a "camera"
+  // transform so it feels like we zoomed toward that planet.
+  const focus = useMemo(() => {
+    if (!focusKey) return null;
+    if (focusKey === 'sun') return { key: 'sun', radius: 0, size: 168, phaseDeg: 0, orbitSpeed: 0 };
+    const p = planets.find((x) => x.key === focusKey);
+    return p || null;
+  }, [focusKey, planets]);
+
+  const [focusT, setFocusT] = useState(0);
+  useEffect(() => {
+    if (!focus) {
+      setFocusT(0);
+      return;
+    }
+    let raf = 0;
+    const start = performance.now();
+    const dur = 900; // ms
+
+    const tick = (now) => {
+      const t = Math.min(1, Math.max(0, (now - start) / dur));
+      // easeInOutCubic
+      const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      setFocusT(eased);
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [focusKey, focus]);
+
+  // Compute the focused planet's current position (same math as render loop)
+  // so we can translate the whole system in the opposite direction.
+  // If focusCenter is true, we keep the focused body centered (no orbit motion).
+  let cameraStyle = undefined;
+  if (focus && focus.key !== 'sun') {
+    // If focusCenter=true, we don't translate (we'll center the focused body directly).
+    // But we still want to animate the zoom.
+    let x = 0;
+    let y = 0;
+    if (!focusCenter) {
+      const orbitOmega = focus.orbitSpeed * 0.165;
+      const angle = simTimeSecRef.current * orbitOmega + (focus.phaseDeg * Math.PI) / 180;
+      const ellipseY = 0.62;
+      const pad = 26;
+      const aMax = viewport.w / 2 - focus.size / 2 - pad;
+      const bMax = viewport.h / 2 - focus.size / 2 - pad;
+      const a = Math.max(30, Math.min(focus.radius, aMax));
+      const b = Math.max(18, Math.min(focus.radius * ellipseY, bMax));
+      x = a * Math.cos(angle);
+      y = b * Math.sin(angle);
+    }
+
+    // zoom in and translate so the body moves toward the center
+    // focusScale is the end-scale at focusT=1
+    const scale = 1 + focusT * Math.max(0, focusScale - 1);
+    const tx = -x * focusT;
+    const ty = -y * focusT;
+    cameraStyle = {
+      transform: `translate3d(${tx}px, ${ty}px, 0) scale(${scale})`,
+      transformOrigin: 'center',
+      transition: 'none',
+    };
+  }
+
+  // Optional global fade during focus.
+  // IMPORTANT: we only apply inline opacity styles when fading is active,
+  // otherwise we'd override CSS hover-dimming rules.
+  const isFocusFading = !!(focus && focusDimAll);
+  let focusSceneOpacity = 1;
+  if (isFocusFading) {
+    const from = Math.max(0, Math.min(1, focusDimFrom));
+    const to = Math.max(from, Math.min(1, focusDimTo));
+    const u = to === from ? 1 : (focusT - from) / (to - from);
+    const t = Math.max(0, Math.min(1, u));
+    focusSceneOpacity = 1 - t;
+  }
+
   return (
     <div
       ref={containerRef}
@@ -169,18 +281,33 @@ export default function CelestialBackground({
       </span>
 
       {/* Centered system: sun in the middle, everything else orbits around it */}
-      <div className="Planetary" aria-hidden="true">
-        <div className={`Sun ${sunDim}`} data-body="sun">
-          <img
-            className="Celestial-img"
-            src={sunImg}
-            alt=""
-            draggable={false}
-            style={sunSpinStyle}
-          />
-        </div>
+      <div className="Planetary" aria-hidden="true" style={cameraStyle}>
+        {!hideSun && (
+          <div
+            className={`Sun ${sunDim}`}
+            data-body="sun"
+            style={isFocusFading ? { opacity: focusSceneOpacity } : undefined}
+          >
+            <img
+              className="Celestial-img"
+              src={sunImg}
+              alt=""
+              draggable={false}
+              style={sunSpinStyle}
+            />
+          </div>
+        )}
 
         {planets.map((p) => {
+          const isFocused = focus ? p.key === focus.key : false;
+          // If we're focusing a specific body, hide the rest (they're already dimmed elsewhere,
+          // but removing them makes the zoom feel like a real camera move).
+          const shouldHideOthers =
+            !!focus &&
+            focusHideOthers &&
+            focusT >= Math.max(0, Math.min(1, focusHideOthersAt));
+          if (shouldHideOthers && !isFocused) return null;
+
           // True ellipse (not transform stacking):
           // x = a*cos(t), y = b*sin(t)
           // Also clamp `a`/`b` so the sprite never leaves the viewport.
@@ -188,16 +315,27 @@ export default function CelestialBackground({
           // `orbitSpeed` here is treated as revolutions per minute-ish scale.
           // (We map it to radians/sec with a constant so existing values still feel right.)
           // ~70% slower baseline at 1.0x
-          const orbitOmega = p.orbitSpeed * 0.165; // radians/sec scale
-          const angle = simTimeSecRef.current * orbitOmega + (p.phaseDeg * Math.PI) / 180;
-          const ellipseY = 0.62; // rounder ellipse (closer to a circle)
-          const pad = 26;
-          const aMax = viewport.w / 2 - p.size / 2 - pad;
-          const bMax = viewport.h / 2 - p.size / 2 - pad;
-          const a = Math.max(30, Math.min(p.radius, aMax));
-          const b = Math.max(18, Math.min(p.radius * ellipseY, bMax));
-          const x = a * Math.cos(angle);
-          const y = b * Math.sin(angle);
+          let x = 0;
+          let y = 0;
+          if (!focusCenter || (focus && isFocused && focusCenter)) {
+            const orbitOmega = p.orbitSpeed * 0.165; // radians/sec scale
+            const angle = simTimeSecRef.current * orbitOmega + (p.phaseDeg * Math.PI) / 180;
+            const ellipseY = 0.62; // rounder ellipse (closer to a circle)
+            const pad = 26;
+            const aMax = viewport.w / 2 - p.size / 2 - pad;
+            const bMax = viewport.h / 2 - p.size / 2 - pad;
+            const a = Math.max(30, Math.min(p.radius, aMax));
+            const b = Math.max(18, Math.min(p.radius * ellipseY, bMax));
+            x = a * Math.cos(angle);
+            y = b * Math.sin(angle);
+          }
+
+          // In focusCenter mode we want ONLY the focused planet to sit at the center.
+          // Other planets will continue to orbit normally (unless hidden via focusHideOthers).
+          if (focusCenter && focus && isFocused) {
+            x = 0;
+            y = 0;
+          }
 
           // Depth ordering (reversed): if a body is "above" the sun (smaller y), render it behind.
           // If it's "below" (larger y), render it in front.
@@ -207,11 +345,26 @@ export default function CelestialBackground({
           const spinOmega = p.spinSpeed * 0.07; // radians/sec scale (much slower self-spin)
           const spin = { transform: `rotate(${simTimeSecRef.current * spinOmega}rad)` };
 
+          let planetOpacity;
+          if (isFocusFading) {
+            planetOpacity = isFocused
+              ? focusDimIncludeFocused
+                ? focusSceneOpacity
+                : 1
+              : focusSceneOpacity;
+          }
+
           return (
             <div key={p.key} className="Planet-orbit" style={orbit}>
               <div
                 className={`${p.className} ${p.dimClass || ''}`}
-                style={{ width: p.size, height: p.size, marginLeft: -p.size / 2, marginTop: -p.size / 2 }}
+                style={{
+                  width: p.size,
+                  height: p.size,
+                  marginLeft: -p.size / 2,
+                  marginTop: -p.size / 2,
+                  ...(isFocusFading ? { opacity: planetOpacity } : null),
+                }}
                 title={p.name}
               >
                 <img

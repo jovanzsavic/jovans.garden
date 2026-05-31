@@ -1,19 +1,53 @@
 import './App.css';
 import CelestialBackground from './components/CelestialBackground';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import Laboratory from './pages/Laboratory';
 
-function App() {
+function HomeRoute() {
   const [highlight, setHighlight] = useState('');
   const [speed, setSpeed] = useState(1);
+  const [isEnteringLab, setIsEnteringLab] = useState(false);
+  const navigate = useNavigate();
 
   const clampSpeed = (v) => Math.max(0.25, Math.min(4, v));
 
+  useEffect(() => {
+    if (!isEnteringLab) return;
+    const t = setTimeout(() => {
+      navigate('/laboratory');
+    }, 900);
+    return () => clearTimeout(t);
+  }, [isEnteringLab, navigate]);
+
+  const startLabTransition = () => {
+    // prevent double-clicks triggering multiple timers
+    if (isEnteringLab) return;
+    setHighlight('brittle');
+    setIsEnteringLab(true);
+  };
+
+  const setHighlightIfAllowed = (key) => {
+    if (isEnteringLab) return;
+    setHighlight(key);
+  };
+
   return (
     <div className="App" data-highlight={highlight || undefined}>
+      <div className={`Blackout${isEnteringLab ? ' is-on' : ''}`} aria-hidden="true" />
       <CelestialBackground
         onPhaseChange={undefined}
         onCycle={undefined}
         speed={speed}
+        focusKey={isEnteringLab ? 'brittle' : undefined}
+        focusCenter={false}
+        focusScale={3.2}
+        focusHideOthers={true}
+        focusHideOthersAt={0.88}
+        focusDimAll={isEnteringLab}
+        focusDimFrom={0}
+        focusDimTo={1}
+        focusDimIncludeFocused={true}
       />
       <div className="Stars" aria-hidden="true" />
       <div className="Stars Stars--2" aria-hidden="true" />
@@ -21,47 +55,54 @@ function App() {
       <main className="Menu" aria-label="Main menu">
         <h1 className="Menu-title">Jovan's Garden</h1>
         <p className="Menu-subtitle">
-          The Universe isn't meant to be scary. It is what it is.
+          welcome.
         </p>
 
         <nav className="Menu-buttons" aria-label="Primary navigation">
           <a
             className="Menu-button"
             href="#about"
-            onMouseEnter={() => setHighlight('timber')}
-            onMouseLeave={() => setHighlight('')}
-            onFocus={() => setHighlight('timber')}
-            onBlur={() => setHighlight('')}
+            data-key="timber"
+            onMouseEnter={() => setHighlightIfAllowed('timber')}
+            onMouseLeave={() => setHighlightIfAllowed('')}
+            onFocus={() => setHighlightIfAllowed('timber')}
+            onBlur={() => setHighlightIfAllowed('')}
           >
             About
           </a>
           <a
             className="Menu-button"
             href="#projects"
-            onMouseEnter={() => setHighlight('twins')}
-            onMouseLeave={() => setHighlight('')}
-            onFocus={() => setHighlight('twins')}
-            onBlur={() => setHighlight('')}
+            data-key="twins"
+            onMouseEnter={() => setHighlightIfAllowed('twins')}
+            onMouseLeave={() => setHighlightIfAllowed('')}
+            onFocus={() => setHighlightIfAllowed('twins')}
+            onBlur={() => setHighlightIfAllowed('')}
           >
             Projects
           </a>
-          <a
+          <button
+            type="button"
             className="Menu-button"
-            href="#laboratory"
-            onMouseEnter={() => setHighlight('brittle')}
-            onMouseLeave={() => setHighlight('')}
-            onFocus={() => setHighlight('brittle')}
-            onBlur={() => setHighlight('')}
+            data-key="brittle"
+            onClick={startLabTransition}
+            onMouseEnter={() => setHighlightIfAllowed('brittle')}
+            onMouseLeave={() => setHighlightIfAllowed('')}
+            onFocus={() => setHighlightIfAllowed('brittle')}
+            onBlur={() => setHighlightIfAllowed('')}
+            aria-disabled={isEnteringLab}
+            disabled={isEnteringLab}
           >
             Laboratory
-          </a>
+          </button>
           <a
             className="Menu-button"
             href="#contact"
-            onMouseEnter={() => setHighlight('giants')}
-            onMouseLeave={() => setHighlight('')}
-            onFocus={() => setHighlight('giants')}
-            onBlur={() => setHighlight('')}
+            data-key="giants"
+            onMouseEnter={() => setHighlightIfAllowed('giants')}
+            onMouseLeave={() => setHighlightIfAllowed('')}
+            onFocus={() => setHighlightIfAllowed('giants')}
+            onBlur={() => setHighlightIfAllowed('')}
           >
             Contact
           </a>
@@ -73,6 +114,7 @@ function App() {
           type="button"
           className="SpeedControls-btn"
           onClick={() => setSpeed((s) => clampSpeed(s / 1.5))}
+          disabled={isEnteringLab}
         >
           -
           <span className="sr-only">Slow down</span>
@@ -81,6 +123,7 @@ function App() {
           type="button"
           className="SpeedControls-btn"
           onClick={() => setSpeed(1)}
+          disabled={isEnteringLab}
         >
           1x
           <span className="sr-only">Normal speed</span>
@@ -89,6 +132,7 @@ function App() {
           type="button"
           className="SpeedControls-btn"
           onClick={() => setSpeed((s) => clampSpeed(s * 1.5))}
+          disabled={isEnteringLab}
         >
           +
           <span className="sr-only">Speed up</span>
@@ -98,6 +142,15 @@ function App() {
         </div>
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<HomeRoute />} />
+      <Route path="/laboratory" element={<Laboratory />} />
+    </Routes>
   );
 }
 
