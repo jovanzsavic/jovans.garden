@@ -3,6 +3,9 @@ import CelestialBackground from './components/CelestialBackground';
 import { useEffect, useState } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import Laboratory from './pages/Laboratory';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import Projects from './pages/Projects';
 
 function HomeRoute() {
   const [highlight, setHighlight] = useState('');
@@ -34,27 +37,82 @@ function HomeRoute() {
     setIsEnteringLab(true);
   };
 
+  const [isEnteringAbout, setIsEnteringAbout] = useState(false);
+  useEffect(() => {
+    if (!isEnteringAbout) return;
+    const t = setTimeout(() => {
+      navigate('/about');
+    }, 900);
+    return () => clearTimeout(t);
+  }, [isEnteringAbout, navigate]);
+
+  const startAboutTransition = () => {
+    if (isEnteringAbout) return;
+    setHighlight('timber');
+    setIsEnteringAbout(true);
+  };
+
+  const [isEnteringContact, setIsEnteringContact] = useState(false);
+  useEffect(() => {
+    if (!isEnteringContact) return;
+    const t = setTimeout(() => {
+      navigate('/contact');
+    }, 900);
+    return () => clearTimeout(t);
+  }, [isEnteringContact, navigate]);
+
+  const startContactTransition = () => {
+    if (isEnteringContact) return;
+    setHighlight('giants');
+    setIsEnteringContact(true);
+  };
+
+  const [isEnteringProjects, setIsEnteringProjects] = useState(false);
+  useEffect(() => {
+    if (!isEnteringProjects) return;
+    const t = setTimeout(() => {
+      navigate('/projects');
+    }, 900);
+    return () => clearTimeout(t);
+  }, [isEnteringProjects, navigate]);
+
+  const startProjectsTransition = () => {
+    if (isEnteringProjects) return;
+    setHighlight('twins');
+    setIsEnteringProjects(true);
+  };
+
   const setHighlightIfAllowed = (key) => {
-    if (isEnteringLab) return;
+    if (isEnteringLab || isEnteringAbout || isEnteringContact || isEnteringProjects) return;
     setHighlight(key);
   };
 
   return (
     <div className="App" data-highlight={highlight || undefined}>
-      <div
-        className={`Blackout${isEnteringHome || isEnteringLab ? ' is-on' : ''}`}
-        aria-hidden="true"
-      />
+        <div
+          className={`Blackout${isEnteringHome || isEnteringLab || isEnteringAbout || isEnteringContact || isEnteringProjects ? ' is-on' : ''}`}
+          aria-hidden="true"
+        />
       <CelestialBackground
         onPhaseChange={undefined}
         onCycle={undefined}
         speed={speed}
-        focusKey={isEnteringLab ? 'brittle' : undefined}
+        focusKey={
+          isEnteringLab
+            ? 'brittle'
+            : isEnteringAbout
+            ? 'timber'
+            : isEnteringContact
+            ? 'giants'
+            : isEnteringProjects
+            ? 'twins'
+            : undefined
+        }
         focusCenter={false}
         focusScale={3.2}
         focusHideOthers={true}
         focusHideOthersAt={0.88}
-        focusDimAll={isEnteringLab}
+        focusDimAll={isEnteringLab || isEnteringAbout || isEnteringContact || isEnteringProjects}
         focusDimFrom={0}
         focusDimTo={1}
         focusDimIncludeFocused={true}
@@ -69,28 +127,34 @@ function HomeRoute() {
         </p>
 
         <nav className="Menu-buttons" aria-label="Primary navigation">
-          <a
+          <button
             className="Menu-button"
-            href="#about"
+            type="button"
             data-key="timber"
+            onClick={startAboutTransition}
             onMouseEnter={() => setHighlightIfAllowed('timber')}
             onMouseLeave={() => setHighlightIfAllowed('')}
             onFocus={() => setHighlightIfAllowed('timber')}
             onBlur={() => setHighlightIfAllowed('')}
+            aria-disabled={isEnteringAbout}
+            disabled={isEnteringAbout}
           >
             About
-          </a>
-          <a
+          </button>
+          <button
             className="Menu-button"
-            href="#projects"
+            type="button"
             data-key="twins"
+            onClick={startProjectsTransition}
             onMouseEnter={() => setHighlightIfAllowed('twins')}
             onMouseLeave={() => setHighlightIfAllowed('')}
             onFocus={() => setHighlightIfAllowed('twins')}
             onBlur={() => setHighlightIfAllowed('')}
+            aria-disabled={isEnteringProjects}
+            disabled={isEnteringProjects}
           >
             Projects
-          </a>
+          </button>
           <button
             type="button"
             className="Menu-button"
@@ -105,17 +169,20 @@ function HomeRoute() {
           >
             Laboratory
           </button>
-          <a
+          <button
             className="Menu-button"
-            href="#contact"
+            type="button"
             data-key="giants"
+            onClick={startContactTransition}
             onMouseEnter={() => setHighlightIfAllowed('giants')}
             onMouseLeave={() => setHighlightIfAllowed('')}
             onFocus={() => setHighlightIfAllowed('giants')}
             onBlur={() => setHighlightIfAllowed('')}
+            aria-disabled={isEnteringContact}
+            disabled={isEnteringContact}
           >
             Contact
-          </a>
+          </button>
         </nav>
       </main>
 
@@ -124,7 +191,7 @@ function HomeRoute() {
           type="button"
           className="SpeedControls-btn"
           onClick={() => setSpeed((s) => clampSpeed(s / 1.5))}
-          disabled={isEnteringLab}
+          disabled={isEnteringLab || isEnteringAbout || isEnteringContact || isEnteringProjects}
         >
           -
           <span className="sr-only">Slow down</span>
@@ -133,7 +200,7 @@ function HomeRoute() {
           type="button"
           className="SpeedControls-btn"
           onClick={() => setSpeed(1)}
-          disabled={isEnteringLab}
+          disabled={isEnteringLab || isEnteringAbout || isEnteringContact || isEnteringProjects}
         >
           1x
           <span className="sr-only">Normal speed</span>
@@ -142,7 +209,7 @@ function HomeRoute() {
           type="button"
           className="SpeedControls-btn"
           onClick={() => setSpeed((s) => clampSpeed(s * 1.5))}
-          disabled={isEnteringLab}
+          disabled={isEnteringLab || isEnteringAbout || isEnteringContact || isEnteringProjects}
         >
           +
           <span className="sr-only">Speed up</span>
@@ -160,6 +227,9 @@ function App() {
     <Routes>
       <Route path="/" element={<HomeRoute />} />
       <Route path="/laboratory" element={<Laboratory />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/projects" element={<Projects />} />
     </Routes>
   );
 }
