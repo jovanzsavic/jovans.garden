@@ -53,7 +53,20 @@ export default function Contact() {
 
         <section className="ContactPanel">
           <h2>Contact</h2>
-          <p>Reach me via email: <a href="mailto:hello@example.com">hello@example.com</a></p>
+          <ul className="ContactList">
+            <li>
+              <strong>Phone:</strong>
+              <a href="tel:+381611390856">+381 61 139 0856</a>
+            </li>
+            <li>
+              <strong>Email:</strong>
+              <a href="mailto:jovanzsavic@gmail.com">jovanzsavic@gmail.com</a>
+            </li>
+            <li>
+              <strong>LinkedIn:</strong>
+              <a href="https://linkedin.com/in/jovanzsavic" target="_blank" rel="noopener noreferrer">linkedin.com/in/jovanzsavic</a>
+            </li>
+          </ul>
         </section>
       </main>
     </div>

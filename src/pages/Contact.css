@@ -45,7 +45,7 @@
   width: min(720px, 100%);
   border: 1px solid rgba(255, 185, 92, 0.18);
   border-radius: 14px;
-  background: rgba(0, 0, 0, 0.32);
+  background: rgba(0, 33, 0, 0.5);
   box-shadow:
     0 0 0 2px rgba(0, 0, 0, 0.22) inset,
     0 20px 60px rgba(0, 0, 0, 0.40);
@@ -53,3 +53,8 @@
 }
 
 .ContactPanel h2 { margin: 0 0 10px 0; font-size: 14px; }
+
+.ContactList { list-style: none; padding: 0; margin: 8px 0 0 0; display: grid; gap: 8px; }
+.ContactList li { display: flex; gap: 8px; align-items: baseline; justify-content: center; }
+.ContactList a { color: rgba(110, 231, 255, 0.95); text-decoration: none; border-bottom: 1px dotted rgba(110,231,255,0.25); padding-bottom: 2px; }
+.ContactList a:hover { opacity: 0.9; }
