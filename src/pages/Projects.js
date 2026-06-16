@@ -146,9 +146,6 @@ export default function Projects() {
             </article>
           </div>
         </section>
-        <div className="ProjectsFooter">
-          <a href="https://github.com/jovanzsavic" target="_blank" rel="noopener noreferrer">github.com/jovanzsavic</a>
-        </div>
       </main>
     </div>
   );
