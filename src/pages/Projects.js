@@ -1,38 +1,72 @@
 import './Projects.css';
 
 import CelestialBackground from '../components/CelestialBackground';
+import MarkdownViewer from '../components/MarkdownViewer';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import moonImg from '../images/moon.png';
-
 const PLACEHOLDER_PROJECTS = [
   {
-    id: 'p1',
-    title: 'Lunar Mapping',
-    date: '2043-04-01',
-    excerpt: 'Scanned a shallow crater rim. Equipment humming; faint radio blips recorded. Surface dust patterns suggest micro-geysers.',
-    image: moonImg,
+    id: 'fintech',
+    title: 'SentinelFlow',
+    date: '14.06.2026',
+    md: '/projects/sentinelflow.md',
+    excerpt: 'Crypto sanctions & AML screening console: deterministic tracing, zk-STARK proof-of-innocence fallbacks, and an analyst case-review console.',
   },
   {
-    id: 'p2',
-    title: 'Static Relay',
-    date: '2043-04-15',
-    excerpt: 'Deployed a low-orbit relay. Signal drift noted at 03:12 UTC. Logged thermal variance and re-routed power to secondary buss.',
-    image: moonImg,
+    id: 'os1',
+    title: 'RISC-V Multithreaded Kernel',
+    date: '10.07.2024',
+    md: '/projects/riscv-kernel.md',
+    excerpt: 'Multithreaded, time-sharing RISC-V kernel: allocator, threads, semaphores and scheduler (educational).',
   },
   {
-    id: 'p3',
-    title: 'Regolith Sample',
-    date: '2043-05-02',
-    excerpt: 'Collected sample from shaded basalt. Grain cohesion higher than predicted. Sample sealed and stored for return.',
-    image: moonImg,
+    id: 'os2',
+    title: 'RAID Subsystem for xv6',
+    date: '11.09.2025',
+    md: '/projects/raid-xv6.md',
+    excerpt: 'Kernel-level RAID implementation for xv6 supporting RAID0/1/4/5, runtime repair and recovery.',
+  },
+  {
+    id: 'fsm-cpu',
+    title: 'Finite State Machine CPU',
+    date: '25.01.2026',
+    md: '/projects/fsm-cpu.md',
+    excerpt: 'FSM-based CPU RTL for Cyclone III/V with ALU, register file, synchronous memory and VGA/PS2 IO. Synthesis-ready.',
+  },
+  {
+    id: 'lauzhack',
+    title: 'Local Discovery',
+    date: '27.11.2025',
+    md: '/projects/local-discovery.md',
+    excerpt: 'AI-powered local place discovery using OpenStreetMap with image fallbacks and a Leaflet UI.',
+  },
+  {
+    id: 'mean',
+    title: 'Booking2.',
+    date: '24.9.2025',
+    md: '/projects/cottage-reservation.md',
+    excerpt: 'Full MEAN-stack cottage reservation platform with roles, calendar, image uploads and booking workflows.',
+  },
+  {
+    id: 'saidkick',
+    title: 'Saidkick',
+    date: '24.04.2026',
+    md: '/projects/saidkick.md',
+    excerpt: 'IntelliJ plugin prototype embedding an LLM chat UI with env-driven configuration and in-session history.',
+  },
+  {
+    id: 'surveillance',
+    title: 'Surveillance System',
+    date: '30.08.2025',
+    md: '/projects/surveillance.md',
+    excerpt: 'Python surveillance prototype: agents stream screen + audio to a supervisor with optional remote control.',
   },
 ];
 
 export default function Projects() {
+  const [showLeaveBlackout, setShowLeaveBlackout] = useState(false);
   const [isEntering, setIsEntering] = useState(true);
   const [isLeaving, setIsLeaving] = useState(false);
-  const [showLeaveBlackout, setShowLeaveBlackout] = useState(false);
   const [selectedIdx, setSelectedIdx] = useState(0);
   const navigate = useNavigate();
 
@@ -76,7 +110,7 @@ export default function Projects() {
             ← Back
           </button>
           <h1 className="ProjectsTitle">Projects</h1>
-          <p className="ProjectsSubtitle">Twins — projects & experiments.</p>
+          <p className="ProjectsSubtitle">Ember & Ash Twins — projects & experiments. See more on <a href="https://github.com/jovanzsavic" target="_blank" rel="noopener noreferrer">GitHub</a></p>
         </header>
 
         <section className="ProjectsPanel">
@@ -102,21 +136,19 @@ export default function Projects() {
             </aside>
 
             <article className="ProjectDetail" aria-live="polite">
-              <figure className="ProjectFigure">
-                <div className="ProjectImageWrap">
-                  <img src={selected.image} alt={selected.title} className="ProjectImage" />
-                  <div className="ImageBanner is-open">
-                    <div className="JournalTitle">Mission Log — {selected.title}</div>
-                    <div className="JournalDate">{selected.date} • ID {selected.id.toUpperCase()}</div>
-                    <div className="JournalParagraph">{selected.excerpt}</div>
-                    <div className="JournalParagraph">Entry recorded by field unit TW-7. Stored in local cache.</div>
-                  </div>
-                </div>
-                <figcaption className="ProjectCaption sr-only">{selected.title} — {selected.date}</figcaption>
-              </figure>
+              <div className="ProjectText">
+                <h3 className="ProjectTextTitle">{selected.title}</h3>
+                <div className="ProjectTextDate">{selected.date}</div>
+                <p className="ProjectTextExcerpt">{selected.excerpt}</p>
+                {/* Render the README markdown for the selected project */}
+                <MarkdownViewer src={selected.md} />
+              </div>
             </article>
           </div>
         </section>
+        <div className="ProjectsFooter">
+          <a href="https://github.com/jovanzsavic" target="_blank" rel="noopener noreferrer">github.com/jovanzsavic</a>
+        </div>
       </main>
     </div>
   );

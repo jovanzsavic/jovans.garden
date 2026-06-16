@@ -1,0 +1,39 @@
+.MarkdownViewer {
+  font-family: var(--font-sans, Consolas, 'Courier New', monospace);
+  color: var(--muted-foreground, #ddd);
+  line-height: 1.5;
+  /* Let the container control height; this will fill remaining space */
+  flex: 1 1 auto;
+  min-height: 120px;
+  max-height: calc(80vh - 180px);
+  overflow: auto;
+  padding: 12px 14px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 8px;
+}
+
+.MarkdownViewer img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 8px 0;
+}
+
+.MarkdownViewer pre {
+  background: rgba(0,0,0,0.4);
+  padding: 8px;
+  border-radius: 6px;
+  overflow: auto;
+}
+
+.MarkdownViewer blockquote {
+  border-left: 3px solid rgba(255,255,255,0.08);
+  padding-left: 12px;
+  color: var(--muted-foreground, #ccc);
+}
+
+.MarkdownViewer h1,
+.MarkdownViewer h2,
+.MarkdownViewer h3 {
+  margin: 8px 0;
+}

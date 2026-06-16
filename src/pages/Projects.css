@@ -5,11 +5,11 @@
 .ProjectsHeader { display: grid; gap: 8px; justify-items: center; }
 .ProjectsTitle { margin: 0; font-family: var(--font-pixel); text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,185,92,0.86); }
 .ProjectsSubtitle { margin: 0; opacity: 0.66; color: rgba(255,200,130,0.70); text-shadow: 0 2px 0 rgba(0,0,0,0.42); }
-.ProjectsPanel { width: min(720px,100%); border: 1px solid rgba(255,185,92,0.18); border-radius: 14px; background: rgba(40,20,10,0.5); box-shadow: 0 0 0 2px rgba(0,0,0,0.22) inset, 0 20px 60px rgba(0,0,0,0.40); padding: 18px; }
+.ProjectsPanel { width: min(920px,100%); border: 1px solid rgba(255,185,92,0.18); border-radius: 14px; background: rgba(40,20,10,0.5); box-shadow: 0 0 0 2px rgba(0,0,0,0.22) inset, 0 20px 60px rgba(0,0,0,0.40); padding: 18px; max-height: 80vh; overflow: auto; }
 .ProjectsPanel h2 { margin: 0 0 10px 0; font-size: 14px; }
 
 /* Layout: left list, right detail */
-.ProjectsGrid { display: grid; grid-template-columns: 220px 1fr; gap: 18px; align-items: start; }
+.ProjectsGrid { display: grid; grid-template-columns: 220px 1fr; gap: 18px; align-items: stretch; }
 .ProjectsList { background: rgba(255,255,255,0.02); border-radius: 10px; padding: 8px; max-height: 420px; overflow: auto; }
 .ProjectsList ul { list-style: none; margin: 0; padding: 0; }
 .ProjectsListItem { display: flex; flex-direction: column; align-items: flex-start; width: 100%; background: transparent; border: none; padding: 10px; text-align: left; color: inherit; cursor: pointer; border-radius: 8px; }
@@ -18,18 +18,17 @@
 .ProjectsListItemTitle { font-family: var(--font-pixel); font-size: 13px; color: rgba(255,220,150,0.95); }
 .ProjectsListItemDate { font-size: 11px; opacity: 0.66; margin-top: 4px; }
 
-.ProjectDetail { background: rgba(0,0,0,0.04); padding: 12px; border-radius: 10px; display: grid; grid-template-columns: 1fr; gap: 12px; }
-.ProjectDetail { border: none; border-radius: 12px; background: linear-gradient(180deg, rgba(12,8,6,0.28), rgba(6,4,5,0.18)); padding: 14px; }
-.ProjectFigure { margin: 0; display: flex; flex-direction: column; align-items: center; }
-.ProjectImageWrap { position: relative; width: 100%; max-width: 360px; border-radius: 10px; overflow: hidden; border: none; }
-.ProjectImage { width: 100%; height: auto; display: block; opacity: 0.72; transform-origin: center; }
-.ImageBanner { position: absolute; left: 0; right: 0; top: 0; bottom: 0; padding: 14px 16px; color: #f7f9ff; display: flex; flex-direction: column; justify-content: flex-end; pointer-events: none; border-radius: 8px; border: none; }
-.ImageBanner { --closed-h: 56px; max-height: 100%; overflow: hidden; }
-.ImageBanner.is-open { max-height: 100%; padding: 18px 16px; }
-.ImageBanner .JournalTitle { font-family: var(--font-pixel); font-size: 14px; color: rgba(255,200,120,0.98); margin-bottom: 6px; }
-.ImageBanner .JournalDate { font-family: Consolas, 'Courier New', monospace; font-size: 12px; opacity: 0.92; margin-bottom: 8px; }
-.ImageBanner .JournalParagraph { font-family: Consolas, 'Courier New', monospace; font-size: 13px; opacity: 0.95; margin: 0 0 6px 0; }
-.ProjectCaption { margin-top: 8px; font-size: 13px; opacity: 0.85; }
+.ProjectDetail { border: none; border-radius: 12px; background: linear-gradient(180deg, rgba(12,8,6,0.28), rgba(6,4,5,0.18)); padding: 14px; display: flex; flex-direction: column; gap: 12px; min-height: 220px; }
+.ProjectFigure { display: none; }
+.ProjectText { padding: 6px 4px; text-align: left; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.ProjectTextTitle { font-family: var(--font-pixel); font-size: 16px; color: rgba(255,200,120,0.98); margin: 0 0 6px 0; }
+.ProjectTextDate { font-family: Consolas, 'Courier New', monospace; font-size: 12px; opacity: 0.9; margin-bottom: 8px; }
+.ProjectTextExcerpt { margin: 0 0 8px 0; font-size: 13px; color: #dfeefc; line-height: 1.45; }
+.ProjectCaption { display: none; }
+
+.ProjectsFooter { margin-top: 16px; text-align: center; }
+.ProjectsFooter a { color: rgba(255,200,120,0.98); text-decoration: none; font-family: var(--font-pixel); }
+.ProjectsFooter a:hover { text-decoration: underline; }
 
 .JournalText { display: none; }
 
